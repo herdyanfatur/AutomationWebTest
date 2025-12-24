@@ -1,0 +1,22 @@
+{
+  "name": "homework9",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/login.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "chai": "^6.2.2",
+    "chromedriver": "^143.0.3",
+    "mocha": "^11.7.5",
+    "selenium-webdriver": "^4.39.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
