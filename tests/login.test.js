@@ -8,10 +8,10 @@ describe('Login & Sort Product Tests', function () {
   let driver;
 
   // ======================
-  // TEST CASE 1: LOGIN
+  // HOOK: BEFORE ALL TEST
+  // Dengan hook ini, kode login hanya dijalankan sekali sebelum semua test case
   // ======================
-  it('Login sukses', async function () {
-
+  before(async function () {
     driver = await new Builder().forBrowser('chrome').build();
 
     // buka halaman login
@@ -31,14 +31,20 @@ describe('Login & Sort Product Tests', function () {
     );
     await passwordField.sendKeys('secret_sauce');
 
-    // klik tombol login
+    // klik login
     const loginButton = await driver.findElement(
       By.xpath('//*[@id="login-button"]')
     );
     await loginButton.click();
 
-    // assert login berhasil
+    // tunggu sampai halaman inventory
     await driver.wait(until.urlContains('inventory.html'), 10000);
+  });
+
+  // ======================
+  // TEST CASE 1: LOGIN
+  // ======================
+  it('Login sukses', async function () {
     const currentUrl = await driver.getCurrentUrl();
 
     expect(currentUrl).to.include(
@@ -52,35 +58,37 @@ describe('Login & Sort Product Tests', function () {
   // ======================
   it('Urutkan produk dari A-Z', async function () {
 
-    // pastikan halaman inventory sudah terbuka
-    await driver.wait(
+    // dropdown sort
+    const filterDropdown = await driver.wait(
       until.elementLocated(
         By.xpath('//*[@id="header_container"]/div[2]/div/span/select')
       ),
       10000
     );
 
-    // klik dropdown filter
-    const filterDropdown = await driver.findElement(
-      By.xpath('//*[@id="header_container"]/div[2]/div/span/select')
-    );
     await filterDropdown.click();
 
-    // pilih filter A-Z
+    // pilih A-Z
     const filterAZ = await driver.findElement(
       By.xpath('//*[@id="header_container"]/div[2]/div/span/select/option[1]')
     );
     await filterAZ.click();
 
-    // assert filter A-Z aktif
+    // assert value dropdown = az
     const selectedValue = await filterDropdown.getAttribute('value');
     expect(selectedValue).to.equal(
       'az',
       'Produk berhasil diurutkan A-Z'
     );
+  });
 
-    // tutup browser
-    await driver.quit();
+  // ======================
+  // HOOK: AFTER ALL TEST
+  // Dengan hook ini, browser akan ditutup setelah semua test case selesai dijalankan
+  // ======================
+  after(async function () {
+    if (driver) {
+      await driver.quit();
+    }
   });
 });
-
