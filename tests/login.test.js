@@ -1,81 +1,112 @@
-import { Builder, By, until } from 'selenium-webdriver';
+import { Builder, until } from 'selenium-webdriver';
+import chrome from 'selenium-webdriver/chrome.js';
 import { expect } from 'chai';
 import 'chromedriver';
+
+import { LoginPages } from '../pages/loginPages.js';
+import { InventoryPage } from '../pages/inventoryPage.js';
 
 describe('Login & Sort Product Tests', function () {
   this.timeout(30000);
 
   let driver;
+  let loginPages;
+  let inventoryPage;
 
   // ======================
   // HOOK: BEFORE ALL TEST
   // Dengan hook ini, kode login hanya dijalankan sekali sebelum semua test case
   // ======================
   before(async function () {
-    driver = await new Builder().forBrowser('chrome').build();
+    // 🔒 AKTIFKAN INCOGNITO
+    const options = new chrome.Options();
+    options.addArguments('--incognito');
 
+    driver = await new Builder()
+      .forBrowser('chrome')
+      .setChromeOptions(options)
+      .build();
+
+    loginPages = new LoginPages(driver);
+    inventoryPage = new InventoryPage(driver);
+    
     // buka halaman login
-    await driver.get('https://www.saucedemo.com/');
+    await loginPages.open();
 
-    // isi username
-    const usernameField = await driver.wait(
-      until.elementLocated(By.xpath('//*[@id="user-name"]')),
-      10000
-    );
-    await usernameField.sendKeys('standard_user');
+  //   // isi username & password
+  //   await loginPages.login('standard_user', 'secret_sauce');
 
-    // isi password
-    const passwordField = await driver.wait(
-      until.elementLocated(By.xpath('//*[@id="password"]')),
-      10000
-    );
-    await passwordField.sendKeys('secret_sauce');
+  //   // tunggu sampai halaman inventory
+  //   await driver.wait(until.urlContains('inventory.html'), 10000);
+  });
 
-    // klik login
-    const loginButton = await driver.findElement(
-      By.xpath('//*[@id="login-button"]')
-    );
-    await loginButton.click();
-
-    // tunggu sampai halaman inventory
-    await driver.wait(until.urlContains('inventory.html'), 10000);
+  beforeEach(async function () {
+    // selalu mulai dari halaman login
+    await loginPages.open();
   });
 
   // ======================
-  // TEST CASE 1: LOGIN
+  // TEST CASE 1: Positive Login
   // ======================
-  it('Login sukses', async function () {
+  it('1. Login sukses', async function () {
+    await loginPages.login('standard_user', 'secret_sauce');
+
+    // tunggu sampai halaman inventory
+    await driver.wait(until.urlContains('inventory.html'), 10000);
     const currentUrl = await driver.getCurrentUrl();
 
     expect(currentUrl).to.include(
       '/inventory.html',
-      'User berhasil login'
+      'User berhasil login dan diarahkan ke halaman inventory'
     );
   });
 
   // ======================
-  // TEST CASE 2: SORT A-Z
+  // TEST CASE 2 : Negative Login ( wrong username )
   // ======================
-  it('Urutkan produk dari A-Z', async function () {
 
-    // dropdown sort
-    const filterDropdown = await driver.wait(
-      until.elementLocated(
-        By.xpath('//*[@id="header_container"]/div[2]/div/span/select')
-      ),
-      10000
+  it('2. Login gagal dengan username salah', async function () {
+    await loginPages.login('hahaha', 'secret_sauces');
+    const errorMessage = await loginPages.getErrorMessage();
+    expect(errorMessage).to.equal(
+      'Epic sadface: Username and password do not match any user in this service',
+      'Pesan error harus sesuai'
     );
+  });
 
-    await filterDropdown.click();
+  // ======================
+  // TEST CASE 3: Neghative Login ( wrong password )
+  // ======================
+  it('3. Login gagal dengan password salah', async function () {
+    await loginPages.login('standard_user', 'hahahaha');
 
-    // pilih A-Z
-    const filterAZ = await driver.findElement(
-      By.xpath('//*[@id="header_container"]/div[2]/div/span/select/option[1]')
+    const errorMessage = await loginPages.getErrorMessage();
+    expect(errorMessage).to.equal(
+      'Epic sadface: Username and password do not match any user in this service',
+      'Pesan error harus sesuai'
     );
-    await filterAZ.click();
+  })
+
+  
+  // ======================
+  // TEST CASE 4 : SORT A-Z
+  // ======================
+  it('4. Urutkan produk dari A-Z', async function () {
+
+
+    // login dulu
+    await loginPages.login('standard_user', 'secret_sauce');
+
+    // tunggu sampai halaman inventory
+    await driver.wait(until.urlContains('inventory.html'), 10000);
+
+    // take an action to sort A-Z from POM method
+    await inventoryPage.sortProductsAZ();
+
+    // get the selected value from dropdown
+    const selectedValue = await inventoryPage.getSelectedSortOption();
 
     // assert value dropdown = az
-    const selectedValue = await filterDropdown.getAttribute('value');
     expect(selectedValue).to.equal(
       'az',
       'Produk berhasil diurutkan A-Z'
