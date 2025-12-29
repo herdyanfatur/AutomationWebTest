@@ -37,6 +37,10 @@ export class LoginPages {
         await this.driver.findElement(this.loginButton).click();
     }
 
+    async getErrorElement() {
+        return await this.driver.findElement(By.xpath('//*[@id="login_button_container"]/div/form/div[3]/h3'));
+    }
+
     async getErrorMessage() {
         await this.driver.wait(
             until.elementLocated(this.errorMessage),
