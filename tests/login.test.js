@@ -6,6 +6,8 @@ import 'chromedriver';
 import { LoginPages } from '../pages/loginPages.js';
 import { InventoryPage } from '../pages/inventoryPage.js';
 
+import fs from 'fs';
+
 describe('Login & Sort Product Tests', function () {
   this.timeout(30000);
 
@@ -85,6 +87,29 @@ describe('Login & Sort Product Tests', function () {
       'Epic sadface: Username and password do not match any user in this service',
       'Pesan error harus sesuai'
     );
+
+    // ambil ELEMENT error
+    const errorElement = await loginPages.getErrorElement();
+    const isDisplayed = await errorElement.isDisplayed();
+
+    // pastikan error message tampil
+    expect(isDisplayed).to.equal(
+      true,
+      'Error message harus tampil'
+    );
+
+    // ambil screenshot halaman login error
+    const screenshot = await driver.takeScreenshot();
+    const filePath = './screenshots/login-negative.png';
+
+    fs.writeFileSync(filePath, screenshot, 'base64');
+
+    // assert screenshot tersimpan
+    expect(fs.existsSync(filePath)).to.equal(
+      true,
+      'Screenshot login gagal berhasil dibuat'
+    );
+
   })
 
   
