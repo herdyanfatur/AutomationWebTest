@@ -8,33 +8,17 @@ export class InventoryPage {
     this.sortDropdown = By.css('.product_sort_container');
 
     }
-
-  // ======================
-  // SORT: A - Z
-  // ======================
-  async sortProductsAZ() {
-    const dropdown = await this.driver.wait(
-      until.elementLocated(this.sortDropdown),
-      10000
-    );
-
-    const select = new Select(dropdown);
-    await select.selectByValue('az');
-  }
-
-  
-  // ======================
-  // SORT: PRICE LOW → HIGH (lohi)
-  // ======================
-  async sortLowToHigh() {
-    const dropdown = await this.driver.wait(
-      until.elementLocated(this.sortDropdown),
-      10000
-    );
-
-    const select = new Select(dropdown);
-    await select.selectByValue('lohi');
-  }
+    // ======================
+    // SORT ALL VALUES METHOD
+    // ======================
+    async sortByValue(value) {
+      const dropdownElement = await this.driver.wait(
+        until.elementLocated(this.sortDropdown),
+        10000
+      );
+        const select = new Select(dropdownElement);
+        await select.selectByValue(value);
+    }
 
     // ======================
     // GET SELECTED SORT VALUE

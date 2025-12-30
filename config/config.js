@@ -9,5 +9,6 @@ export const config = {
         password: 'invalid_password'
     },
     timeout: 10000,
-    screenshotPath: './screenshots/'
+    screenshotPath: './screenshots/',
+    screenshotSortingPath: './screenshots/sorting/'
 };

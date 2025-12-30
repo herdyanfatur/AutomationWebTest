@@ -7,6 +7,7 @@ import { LoginPages } from '../pages/loginPages.js';
 import { InventoryPage } from '../pages/inventoryPage.js';
 import { config } from '../config/config.js';
 
+import path from 'path';
 import fs from 'fs';
 
 describe('Login & Sort Product Tests', function () {
@@ -133,9 +134,9 @@ describe('Login & Sort Product Tests', function () {
 
   
   // ======================
-  // TEST CASE 4 : SORT A-Z
+  // TEST CASE 4 : SORTiNG PRODUCT
   // ======================
-  it('4. Sorting Product', async function () {
+  it('4. Sorting Product untuk semua opsi', async function () {
 
 
     // login dulu
@@ -147,22 +148,46 @@ describe('Login & Sort Product Tests', function () {
     // tunggu sampai halaman inventory
     await driver.wait(until.urlContains('inventory.html'), config.timeout);
 
-    // take an action to sort A-Z from POM method
-    await inventoryPage.sortLowToHigh();
+    // pastikan folder screenshot ada
+    const sortingPath = `${config.screenshotSortingPath}sorting.png`;
+    const screenshotDir = path.resolve(sortingPath);
+    if (!fs.existsSync(screenshotDir)) {
+      fs.mkdirSync(screenshotDir, { recursive: true });
+    }
 
-    // get the selected value from dropdown
-    const selectedValue = await inventoryPage.getSelectedSortOption();
+    // daftar semua opsi sort
+    const sortOptions = [
+      { value: 'az', description: 'Name (A to Z)' },
+      { value: 'za', description: 'Name (Z to A)' },
+      { value: 'lohi', description: 'Price (low to high)' },
+      { value: 'hilo', description: 'Price (high to low)' },
+    ];
+    // lakukan sort untuk setiap opsi dan verifikasi
+    for (const option of sortOptions) {
+      await inventoryPage.sortByValue(option.value);
+      const selectedValue = await inventoryPage.getSelectedSortOption();
 
-    // assert value dropdown = az
-    expect(selectedValue).to.equal(
-      'lohi',
-      'Produk tidak berhasil diurutkan Z-A'
-    );
+      // assert value dropdown
+      expect(selectedValue).to.equal(
+        option.value,
+        `Produk tidak berhasil diurutkan berdasarkan ${option.description}`
+      );
 
-    // ambil screenshot halaman inventory setelah sort A-Z
-    const screenshot = await driver.takeScreenshot();
-    const filePath = `${config.screenshotPath}sort-products-az.png`;
-    fs.writeFileSync(filePath, screenshot, 'base64');
+      // ambil screenshot
+      const screenshot = await driver.takeScreenshot();
+      const filePath = path.join(
+        screenshotDir,
+        `sorting-${option.value}.png`
+      );
+
+      fs.writeFileSync(filePath, screenshot, 'base64');
+
+      // assert screenshot tersimpan
+      expect(fs.existsSync(filePath)).to.equal(
+        true,
+        `Screenshot untuk sorting ${option.value} berhasil dibuat`
+      );
+    }
   });
 
   // ======================
