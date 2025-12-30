@@ -1,27 +1,50 @@
 import { By, until } from "selenium-webdriver";
+import { Select } from 'selenium-webdriver/lib/select.js';
 
 export class InventoryPage {
   constructor(driver) {
     this.driver = driver;
     
-    this.sortDropdown = By.xpath('//*[@id="header_container"]/div[2]/div/span/select');
+    this.sortDropdown = By.css('.product_sort_container');
 
     }
 
-    async sortProductsAZ() {
-        await this.driver.wait(
-            until.elementLocated(this.sortDropdown),
-            10000
-        );
-        await this.driver.findElement(this.sortDropdown).sendKeys("az");
-    }
+  // ======================
+  // SORT: A - Z
+  // ======================
+  async sortProductsAZ() {
+    const dropdown = await this.driver.wait(
+      until.elementLocated(this.sortDropdown),
+      10000
+    );
 
-    async getSelectedSortOption() {
-        await this.driver.wait(
-            until.elementLocated(this.sortDropdown),
-            10000
-        );
-        const selectedOption = await this.driver.findElement(this.sortDropdown).getAttribute("value");
-        return selectedOption;
-    }
+    const select = new Select(dropdown);
+    await select.selectByValue('az');
+  }
+
+  
+  // ======================
+  // SORT: PRICE LOW → HIGH (lohi)
+  // ======================
+  async sortLowToHigh() {
+    const dropdown = await this.driver.wait(
+      until.elementLocated(this.sortDropdown),
+      10000
+    );
+
+    const select = new Select(dropdown);
+    await select.selectByValue('lohi');
+  }
+
+    // ======================
+    // GET SELECTED SORT VALUE
+    // ======================
+  async getSelectedSortOption() {
+    const dropdown = await this.driver.wait(
+      until.elementLocated(this.sortDropdown),
+      10000
+    );
+
+    return await dropdown.getAttribute('value');
+  }
 }

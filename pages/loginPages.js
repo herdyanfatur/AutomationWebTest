@@ -4,7 +4,7 @@ export class LoginPages {
   constructor(driver) {
     this.driver = driver;
 
-    // Locators
+    // Locators Login Page elements 
     this.usernameField = By.xpath('//input[@id="user-name"]');
     this.passwordField = By.xpath('//input[@id="password"]');
     this.loginButton = By.xpath('//input[@id="login-button"]');
@@ -13,8 +13,8 @@ export class LoginPages {
     this.errorMessage = By.xpath('//*[@id="login_button_container"]/div/form/div[3]/h3');  
   }
 
-  async open() {
-        await this.driver.get('https://www.saucedemo.com/');
+  async open(url) {
+        await this.driver.get(url);
     }
 
     async login(username, password) {
